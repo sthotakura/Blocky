@@ -1,4 +1,4 @@
-namespace BlockyWeb.Core;
+namespace BlockyApi.Core;
 
 public interface IEncryptor
 {

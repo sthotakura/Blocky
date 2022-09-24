@@ -1,4 +1,4 @@
-namespace BlockyWeb.Core;
+namespace BlockyApi.Core;
 
 public sealed class PasswordManager : IPasswordManager, IDisposable
 {
@@ -11,7 +11,7 @@ public sealed class PasswordManager : IPasswordManager, IDisposable
     {
         _encryptor = encryptor ?? throw new ArgumentNullException(nameof(encryptor));
 
-        EncryptedPassword = File.ReadAllText(PasswordFile);
+        EncryptedPassword = File.Exists(PasswordFile) ? File.ReadAllText(PasswordFile) : string.Empty;
         _passwordFileStream = File.Open(PasswordFile, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
     }
 
@@ -32,6 +32,8 @@ public sealed class PasswordManager : IPasswordManager, IDisposable
     }
 
     public bool IsPassword(string password) => EncryptedPassword == _encryptor.Encrypt(password);
+
+    public bool HasPassword() => !string.IsNullOrWhiteSpace(EncryptedPassword);
 
     public void Dispose()
     {

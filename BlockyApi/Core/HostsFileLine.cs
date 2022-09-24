@@ -1,8 +1,8 @@
-namespace BlockyWeb.Core;
+namespace BlockyApi.Core;
 
-public sealed class HostFileLine
+public sealed class HostsFileLine : IHostsFileLine
 {
-    public HostFileLine(string? line)
+    public HostsFileLine(string? line)
     {
         Line = line;
     }
@@ -17,28 +17,30 @@ public sealed class HostFileLine
 
     public string? IpAddress { get; private set; }
 
-    public HostFileLine SetIsEmpty(bool isEmpty)
+    public bool IsAddedByBlocky => (bool)Line?.Contains(Consts.BlockyComment);
+
+    public HostsFileLine SetIsEmpty(bool isEmpty)
     {
         IsEmpty = isEmpty;
 
         return this;
     }
 
-    public HostFileLine SetIsComment(bool isComment)
+    public HostsFileLine SetIsComment(bool isComment)
     {
         IsComment = isComment;
 
         return this;
     }
 
-    public HostFileLine SetHost(string host)
+    public HostsFileLine SetHost(string host)
     {
         Host = host;
 
         return this;
     }
 
-    public HostFileLine SetIpAddress(string ipAddress)
+    public HostsFileLine SetIpAddress(string ipAddress)
     {
         IpAddress = ipAddress;
 
