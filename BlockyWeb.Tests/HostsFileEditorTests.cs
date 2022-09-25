@@ -19,9 +19,11 @@ public class HostsFileEditorTests
         var readerWriter = new Mock<IHostsFileReaderWriter>(MockBehavior.Strict);
         readerWriter.Setup(r => r.ReadLinesAsync()).ReturnsAsync(new List<IHostsFileLine>().AsReadOnly());
         readerWriter.Setup(w => w.WriteLinesAsync(It.IsAny<IEnumerable<IHostsFileLine>>())).Returns(Task.CompletedTask);
+        var dnsFlusher = new Mock<IFlushDns>(MockBehavior.Strict);
+        dnsFlusher.Setup(x => x.FlushAsync()).ReturnsAsync(true);
 
         var editor = new BlockyService(new SimpleLogger<BlockyService>(_outputHelper), readerWriter.Object,
-            new HostsFileLineParser());
+            new HostsFileLineParser(), dnsFlusher.Object);
         await editor.BlockAsync("test-host");
 
         readerWriter.Verify(r => r.ReadLinesAsync(), Times.Once);
@@ -34,9 +36,11 @@ public class HostsFileEditorTests
         var readerWriter = new Mock<IHostsFileReaderWriter>(MockBehavior.Strict);
         readerWriter.Setup(r => r.ReadLinesAsync()).ReturnsAsync(new List<IHostsFileLine>().AsReadOnly());
         readerWriter.Setup(w => w.WriteLinesAsync(It.IsAny<IEnumerable<IHostsFileLine>>())).Returns(Task.CompletedTask);
+        var dnsFlusher = new Mock<IFlushDns>(MockBehavior.Strict);
+        dnsFlusher.Setup(x => x.FlushAsync()).ReturnsAsync(true);
 
         var editor = new BlockyService(new SimpleLogger<BlockyService>(_outputHelper), readerWriter.Object,
-            new HostsFileLineParser());
+            new HostsFileLineParser(), dnsFlusher.Object);
         await editor.UnblockAsync("test-host");
 
         readerWriter.Verify(r => r.ReadLinesAsync(), Times.Once);

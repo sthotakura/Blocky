@@ -11,10 +11,12 @@ services
     .AddSingleton<IHostsFileLineParser, HostsFileLineParser>()
     .AddSingleton<IHostsFileEditorSettings, HostsFileEditorSettings>()
     .AddSingleton<IHostsFileReaderWriter, HostsFileReaderWriter>()
+    .AddSingleton<IFlushDns, DnsFlusher>()
     .AddSingleton<IBlockyService, BlockyService>();
 
 var app = builder.Build();
 
 app.MapGet("/", () => "Blocky API!");
+app.
 
 app.Run();
