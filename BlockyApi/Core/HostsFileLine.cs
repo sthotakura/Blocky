@@ -17,7 +17,7 @@ public sealed class HostsFileLine : IHostsFileLine
 
     public string? IpAddress { get; private set; }
 
-    public bool IsAddedByBlocky => (bool)Line?.Contains(Consts.BlockyComment);
+    public bool IsAddedByBlocky => Line?.Contains(Consts.BlockyComment) ?? false;
 
     public HostsFileLine SetIsEmpty(bool isEmpty)
     {

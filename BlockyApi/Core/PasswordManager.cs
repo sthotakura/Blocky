@@ -2,7 +2,7 @@ namespace BlockyApi.Core;
 
 public sealed class PasswordManager : IPasswordManager, IDisposable
 {
-    const string PasswordFile = "Block.password";
+    const string PasswordFile = "Blocky.password";
 
     readonly IEncryptor _encryptor;
     readonly Stream _passwordFileStream;
@@ -28,10 +28,11 @@ public sealed class PasswordManager : IPasswordManager, IDisposable
 
         EncryptedPassword = _encryptor.Encrypt(password);
         var writer = new StreamWriter(_passwordFileStream);
-        writer.WriteLine(EncryptedPassword);
+        writer.Write(EncryptedPassword);
+        writer.Flush();
     }
 
-    public bool IsPassword(string password) => EncryptedPassword == _encryptor.Encrypt(password);
+    public bool IsPassword(string password) => password == _encryptor.Decrypt(EncryptedPassword);
 
     public bool HasPassword() => !string.IsNullOrWhiteSpace(EncryptedPassword);
 

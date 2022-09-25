@@ -5,7 +5,7 @@ public sealed class HostsFileReaderWriter : IHostsFileReaderWriter, IDisposable
     readonly ILogger<HostsFileReaderWriter> _logger;
     readonly IHostsFileLineParser _parser;
     readonly FileSystemWatcher _watcher;
-    readonly List<IHostsFileLine> _lines = new();
+    List<IHostsFileLine> _lines = new();
     readonly SemaphoreSlim _listLock = new(1, 1);
 
     Task _loadTask;
@@ -76,9 +76,12 @@ public sealed class HostsFileReaderWriter : IHostsFileReaderWriter, IDisposable
     public async Task WriteLinesAsync(IEnumerable<IHostsFileLine> lines)
     {
         if (lines == null) throw new ArgumentNullException(nameof(lines));
+
+        var toWrite = lines.ToList();
         
-        _logger.LogInformation("Saving {LinesCount} to Hosts file: {HostsFilePath}", _lines.Count, HostsFilePath);
-        await File.WriteAllLinesAsync(HostsFilePath, _lines.Select(l => l.Line ?? string.Empty));
+        _logger.LogInformation("Saving {LinesCount} to Hosts file: {HostsFilePath}", toWrite.Count, HostsFilePath);
+        await File.WriteAllLinesAsync(HostsFilePath, toWrite.Select(l => l.Line ?? string.Empty));
+        Interlocked.Exchange(ref _lines, toWrite);
     }
 
     public void Dispose()

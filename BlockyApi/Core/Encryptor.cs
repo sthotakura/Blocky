@@ -14,4 +14,5 @@ public sealed class Encryptor : IEncryptor
     }
 
     public string Encrypt(string password) => _protector.Protect(password);
+    public string Decrypt(string encrypted) => _protector.Unprotect(encrypted);
 }

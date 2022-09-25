@@ -6,7 +6,6 @@ public sealed class BlockyService : IBlockyService, IDisposable
     readonly IHostsFileReaderWriter _readerWriter;
     readonly IHostsFileLineParser _parser;
     readonly IFlushDns _flushDns;
-    readonly Task<IReadOnlyCollection<IHostsFileLine>> _getTask;
     readonly List<IHostsFileLine> _lines = new();
     readonly SemaphoreSlim _listLock = new(1, 1);
 
@@ -18,7 +17,6 @@ public sealed class BlockyService : IBlockyService, IDisposable
         _parser = parser ?? throw new ArgumentNullException(nameof(parser));
         _flushDns = flushDns ?? throw new ArgumentNullException(nameof(flushDns));
 
-        _getTask = _readerWriter.ReadLinesAsync();
         _readerWriter.LinesChanged += async (_, lines) =>
         {
             await _listLock.WaitAsync();
@@ -35,10 +33,10 @@ public sealed class BlockyService : IBlockyService, IDisposable
 
     public async Task<IReadOnlyCollection<string>> GetBlockedListAsync()
     {
-        await _getTask;
         await _listLock.WaitAsync();
         try
         {
+            UpdateLines(await _readerWriter.ReadLinesAsync());
             return _lines.Where(l => l.IsAddedByBlocky).Select(l => l.Host!).ToList().AsReadOnly();
         }
         finally
@@ -58,7 +56,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
         try
         {
             _logger.LogInformation("Adding {Line}", line);
-            UpdateLines(await _getTask);
+            UpdateLines(await _readerWriter.ReadLinesAsync());
             _lines.Add(_parser.Parse(line));
             await _readerWriter.WriteLinesAsync(_lines);
             return await _flushDns.FlushAsync();
@@ -84,7 +82,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
         await _listLock.WaitAsync();
         try
         {
-            UpdateLines(await _getTask);
+            UpdateLines(await _readerWriter.ReadLinesAsync());
             _lines.RemoveAll(l => l.Host == hostName);
             await _readerWriter.WriteLinesAsync(_lines);
             return await _flushDns.FlushAsync();
@@ -97,7 +95,6 @@ public sealed class BlockyService : IBlockyService, IDisposable
 
     public void Dispose()
     {
-        _getTask.Dispose();
         _listLock.Dispose();
         (_readerWriter as IDisposable)?.Dispose();
     }
