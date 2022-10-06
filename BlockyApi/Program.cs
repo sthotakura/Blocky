@@ -14,6 +14,10 @@ builder.Host.UseWindowsService();
 
 var services = builder.Services;
 services.AddDataProtection();
+services.AddCors(options =>
+{
+    options.AddPolicy(options.DefaultPolicyName, policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+});
 
 services
     .AddSingleton<IEncryptor, Encryptor>()
@@ -26,6 +30,8 @@ services
 
 var app = builder.Build();
 
+app.UseCors();
+
 app.MapGet("/", () => "Blocky API!");
 
 app.MapGet("/status", (IPasswordManager passwordManager) => new { hasSecret = passwordManager.HasPassword() });
@@ -36,7 +42,7 @@ app.MapPost("/secret", (IPasswordManager passwordManager, [FromBody] SecretInput
     {
         return Results.BadRequest("A secret has already been set");
     }
-    
+
     if (string.IsNullOrWhiteSpace(secret.Secret))
     {
         return Results.BadRequest("An empty secret provided.");

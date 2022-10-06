@@ -83,7 +83,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
         try
         {
             UpdateLines(await _readerWriter.ReadLinesAsync());
-            _lines.RemoveAll(l => l.Host == hostName);
+            _lines.RemoveAll(l => l.Host == hostName && l.IsAddedByBlocky);
             await _readerWriter.WriteLinesAsync(_lines);
             return await _flushDns.FlushAsync();
         }
