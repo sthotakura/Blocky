@@ -3,7 +3,7 @@
 const http = axios.create({
   baseURL: "http://localhost:5200",
   headers: {
-    "Content-type": "application/json"
+    "Content-Type": "application/json"
   }
 })
 

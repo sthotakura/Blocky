@@ -9,7 +9,7 @@
         The Website Blocker
       </div>
     </div>
-    <spinner v-if="isInitializing" text="Initializing . . ."/>
+    <spinner v-if="isInitializing" text="Initializing . . ." :size="10"/>
     <div v-else>
       <div v-if="hasSecret">
         <div>
