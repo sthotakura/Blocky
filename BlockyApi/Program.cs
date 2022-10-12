@@ -11,12 +11,14 @@ var builderOptions = new WebApplicationOptions
 
 var builder = WebApplication.CreateBuilder(builderOptions);
 builder.Host.UseWindowsService();
+builder.Logging.AddLog4Net();
 
 var services = builder.Services;
 services.AddDataProtection();
 services.AddCors(options =>
 {
-    options.AddPolicy(options.DefaultPolicyName, policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+    options.AddPolicy(options.DefaultPolicyName,
+        policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 });
 
 services

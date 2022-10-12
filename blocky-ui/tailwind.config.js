@@ -2,7 +2,11 @@
     content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
     safelist: [
         'w-20',
-        'h-20'
+        'h-20',
+        'w-10',
+        'h-10',
+        'w-4',
+        'h-4',
     ],
     darkMode: 'media', // or 'media' or 'class'
     theme: {
