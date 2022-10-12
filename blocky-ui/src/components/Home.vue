@@ -57,7 +57,7 @@
       </div>
     </div>
   </div>
-  <div class="flex justify-center mt-3 cursor-default select-none">
+  <div class="flex justify-center mt-16 cursor-default select-none">
     <div>
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline" viewBox="0 0 20 20" fill="red">
         <path fill-rule="evenodd"
