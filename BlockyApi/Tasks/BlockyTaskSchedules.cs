@@ -8,7 +8,7 @@ public static class BlockyTaskSchedules
 
         public bool Repeat { get; private set; }
 
-        internal static IBlockyTaskSchedule From(TimeSpan at, bool repeat)
+        internal static IBlockyTaskSchedule From(TimeSpan at, bool repeat = true)
         {
             return new AnonymousTaskSchedule
             {
@@ -19,8 +19,8 @@ public static class BlockyTaskSchedules
     }
 
     public static readonly IBlockyTaskSchedule PauseSchedule =
-        AnonymousTaskSchedule.From(TimeSpan.FromHours(17).Add(TimeSpan.FromMinutes(30)), true);
+        AnonymousTaskSchedule.From(TimeSpan.FromHours(17).Add(TimeSpan.FromMinutes(30)));
     
     public static readonly IBlockyTaskSchedule UnPauseSchedule =
-        AnonymousTaskSchedule.From(TimeSpan.FromHours(9).Add(TimeSpan.FromMinutes(30)), true);
+        AnonymousTaskSchedule.From(TimeSpan.FromHours(9).Add(TimeSpan.FromMinutes(30)));
 }
