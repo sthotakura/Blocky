@@ -4,9 +4,9 @@ public static class BlockyTaskSchedules
 {
     class AnonymousTaskSchedule : IBlockyTaskSchedule
     {
-        public TimeSpan At { get; private set; }
+        public TimeSpan At { get; private init; }
 
-        public bool Repeat { get; private set; }
+        public bool Repeat { get; private init; }
 
         internal static IBlockyTaskSchedule From(TimeSpan at, bool repeat = true)
         {
