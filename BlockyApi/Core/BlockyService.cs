@@ -7,7 +7,9 @@ public sealed class BlockyService : IBlockyService, IDisposable
     readonly IHostsFileLineParser _parser;
     readonly IFlushDns _flushDns;
     readonly List<IHostsFileLine> _lines = new();
-    readonly SemaphoreSlim _listLock = new(1, 1);
+    readonly SemaphoreSlim _linesListLock = new(1, 1);
+    readonly ISet<string> _pausedSet = new HashSet<string>();
+    readonly SemaphoreSlim _pausedSetLock = new(1, 1);
 
     public BlockyService(ILogger<BlockyService> logger, IHostsFileReaderWriter readerWriter,
         IHostsFileLineParser parser, IFlushDns flushDns)
@@ -19,21 +21,21 @@ public sealed class BlockyService : IBlockyService, IDisposable
 
         _readerWriter.LinesChanged += async (_, lines) =>
         {
-            await _listLock.WaitAsync();
+            await _linesListLock.WaitAsync();
             try
             {
                 UpdateLines(lines);
             }
             finally
             {
-                _listLock.Release();
+                _linesListLock.Release();
             }
         };
     }
 
     public async Task<IReadOnlyCollection<string>> GetBlockedListAsync()
     {
-        await _listLock.WaitAsync();
+        await _linesListLock.WaitAsync();
         try
         {
             UpdateLines(await _readerWriter.ReadLinesAsync());
@@ -41,7 +43,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
         }
         finally
         {
-            _listLock.Release();
+            _linesListLock.Release();
         }
     }
 
@@ -52,7 +54,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
 
         var line = $"{ipAddress} {hostName} {Consts.BlockyComment}";
 
-        await _listLock.WaitAsync();
+        await _linesListLock.WaitAsync();
         try
         {
             _logger.LogInformation("Adding {Line}", line);
@@ -63,7 +65,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
         }
         finally
         {
-            _listLock.Release();
+            _linesListLock.Release();
         }
     }
 
@@ -79,7 +81,7 @@ public sealed class BlockyService : IBlockyService, IDisposable
 
         _logger.LogInformation("Removing entry {HostName}", hostName);
 
-        await _listLock.WaitAsync();
+        await _linesListLock.WaitAsync();
         try
         {
             UpdateLines(await _readerWriter.ReadLinesAsync());
@@ -89,13 +91,44 @@ public sealed class BlockyService : IBlockyService, IDisposable
         }
         finally
         {
-            _listLock.Release();
+            _linesListLock.Release();
         }
+    }
+
+    public async Task<bool> PauseBlockingAsync(IEnumerable<string> hostNames)
+    {
+        var paused = true;
+        
+        foreach (var hostName in hostNames)
+        {
+            var hostPaused = await UnblockAsync(hostName);
+            if (hostPaused)
+            {
+                _pausedSet.Add(hostName);
+            }
+            paused &= hostPaused;
+        }
+
+        return paused;
+    }
+
+    public async Task<bool> ResumeBlockingAsync()
+    {
+        var unPaused = true;
+
+        foreach (var pausedHost in _pausedSet)
+        {
+            var hostUnPaused = await BlockAsync(pausedHost);
+            _pausedSet.Remove(pausedHost);
+            unPaused &= hostUnPaused;
+        }
+
+        return unPaused;
     }
 
     public void Dispose()
     {
-        _listLock.Dispose();
+        _linesListLock.Dispose();
         (_readerWriter as IDisposable)?.Dispose();
     }
 }

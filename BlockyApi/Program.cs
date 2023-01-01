@@ -1,5 +1,6 @@
 using BlockyApi.Core;
 using BlockyApi.Data;
+using BlockyApi.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting.WindowsServices;
 
@@ -22,12 +23,17 @@ services.AddCors(options =>
 });
 
 services
+    .AddHostedService<BlockyTasksHostedService>()
     .AddSingleton<IEncryptor, Encryptor>()
     .AddSingleton<IPasswordManager, PasswordManager>()
     .AddSingleton<IHostsFileLineParser, HostsFileLineParser>()
     .AddSingleton<IHostsFileEditorSettings, HostsFileEditorSettings>()
     .AddSingleton<IHostsFileReaderWriter, HostsFileReaderWriter>()
     .AddSingleton<IFlushDns, DnsFlusher>()
+    .AddSingleton<IDateTimeService, DateTimeService>()
+    .AddSingleton<PauseBlocking>()
+    .AddSingleton<ResumeBlocking>()
+    .AddSingleton<IBlockyTaskScheduler, BlockyTaskScheduler>()
     .AddSingleton<IBlockyService, BlockyService>();
 
 var app = builder.Build();
