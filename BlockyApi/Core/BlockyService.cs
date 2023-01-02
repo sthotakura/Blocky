@@ -104,7 +104,15 @@ public sealed class BlockyService : IBlockyService, IDisposable
             var hostPaused = await UnblockAsync(hostName);
             if (hostPaused)
             {
-                _pausedSet.Add(hostName);
+                await _pausedSetLock.WaitAsync();
+                try
+                {
+                    _pausedSet.Add(hostName);
+                }
+                finally
+                {
+                    _pausedSetLock.Release();
+                }
             }
             paused &= hostPaused;
         }
@@ -119,7 +127,15 @@ public sealed class BlockyService : IBlockyService, IDisposable
         foreach (var pausedHost in _pausedSet)
         {
             var hostUnPaused = await BlockAsync(pausedHost);
-            _pausedSet.Remove(pausedHost);
+            await _pausedSetLock.WaitAsync();
+            try
+            {
+                _pausedSet.Remove(pausedHost);
+            }
+            finally
+            {
+                _pausedSetLock.Release();
+            }
             unPaused &= hostUnPaused;
         }
 
